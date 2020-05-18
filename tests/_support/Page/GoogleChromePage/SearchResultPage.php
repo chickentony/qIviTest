@@ -12,9 +12,7 @@ class SearchResultPage
 
     public const RATING_CONTAINER = '//div[@class="dhIWPd f"]';
 
-    public const FIRST_SEARCH_PAGE_NEXT_PAGE_LINK = '//a[@class="G0iuSb"]';
-
-    public const NEXT_PAGE_LINK = '(//a[@class="G0iuSb"])[2]';
+    public const NEXT_PAGE_LINK = '//a[@class="G0iuSb"]//span[text()="Следующая"]';
 
     public $searchPageRating;
 
@@ -66,17 +64,9 @@ class SearchResultPage
 
     public function checkPagesForRating(int $numberOfPages): void
     {
-        $pageNumber = 1;
-        while ($pageNumber < $numberOfPages) {
+        for ($pageNumber = 1; $pageNumber < $numberOfPages; $pageNumber++) {
             $this->getRatingsFromSearchPageAndMarketPage();
-            if ($pageNumber === 1) {
-                $this->clickOnNextPage(self::FIRST_SEARCH_PAGE_NEXT_PAGE_LINK);
-            }
-            $this->clickOnNextPage(self::NEXT_PAGE_LINK);
-            if ($pageNumber === $numberOfPages) {
-                break;
-            }
-            $pageNumber++;
+            $this->clickOnNextPage();
         }
     }
 
@@ -90,8 +80,9 @@ class SearchResultPage
                 $this->tester->click($link);
                 $articleLinks = $this->tester->grabMultiple('//div[@id="bodyContent"]//a', 'href');
                 foreach ($articleLinks as $articleLink) {
-                    preg_match($officialIviSitePattern, $articleLink, $matches);
-                    $this->linksFromWikipedia[] = $matches;
+                    if (preg_match($officialIviSitePattern, $articleLink, $matches)) {
+                        $this->linksFromWikipedia[] = $matches;
+                    }
                 }
                 $this->tester->moveBack();
             }
@@ -100,24 +91,16 @@ class SearchResultPage
 
     public function checkPagesForLinksToWikipediaAndGetLinksToOfficialIviSiteFromArticles(int $numberOfPages)
     {
-        $pageNumber = 1;
-        while ($pageNumber < $numberOfPages) {
+        for ($pageNumber = 1; $pageNumber < $numberOfPages; $pageNumber++) {
             $this->openWikipediaPages();
-            if ($pageNumber === 1) {
-                $this->clickOnNextPage(self::FIRST_SEARCH_PAGE_NEXT_PAGE_LINK);
-            }
-            $this->clickOnNextPage(self::NEXT_PAGE_LINK);
-            if ($pageNumber === $numberOfPages) {
-                break;
-            }
-            $pageNumber++;
+            $this->clickOnNextPage();
         }
     }
 
-    private function clickOnNextPage(string $nextPageLocator): SearchResultPage
+    private function clickOnNextPage(): SearchResultPage
     {
-        $this->tester->scrollTo($nextPageLocator);
-        $this->tester->click($nextPageLocator);
+        $this->tester->scrollTo(self::NEXT_PAGE_LINK);
+        $this->tester->click(self::NEXT_PAGE_LINK);
         return $this;
     }
 

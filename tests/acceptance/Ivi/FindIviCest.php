@@ -27,7 +27,7 @@ class FindIviCest
         $googleChromeMainPage->search('ivi');
         $googleChromeSearchResultPage->clickOnPicturesTab();
         $googleChromePicturesPage->clickOnToolsButton();
-        $googleChromePicturesPage->selectImageSize();
+        $googleChromePicturesPage->selectImageSize($googleChromePicturesPage::BIG_IMAGE_SIZE_DROPDOWN_VALUE);
 
         //assert
         $googleChromePicturesPage->clickOnImageInListAndCheckImageHref(30, 3);
@@ -59,7 +59,7 @@ class FindIviCest
         $googleChromeMainPage->search('ivi');
         $googleChromeSearchResultPage->checkPagesForLinksToWikipediaAndGetLinksToOfficialIviSiteFromArticles(5);
 
-        //assert?
-        var_dump($googleChromeSearchResultPage->linksFromWikipedia);
+        //assert
+        $I->assertNotEmpty($googleChromeSearchResultPage->linksFromWikipedia);
     }
 }
