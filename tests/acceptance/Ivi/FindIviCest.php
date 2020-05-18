@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace tests\acceptance\ivi;
 
 use AcceptanceTester;
-use Page\GoogleChromePage\GoogleChromeMainPage;
+use Page\GoogleChromePage\MainPage;
 use Page\GoogleChromePage\PicturesPage;
 use Page\GoogleChromePage\SearchResultPage;
 
@@ -15,10 +15,10 @@ class FindIviCest
      * @param AcceptanceTester $I
      * @throws \Exception
      */
-    public function findIviInPictures(AcceptanceTester $I): void
+    public function findLinkToOfficialSiteFromPictures(AcceptanceTester $I): void
     {
         //arrange
-        $googleChromeMainPage = new GoogleChromeMainPage($I);
+        $googleChromeMainPage = new MainPage($I);
         $googleChromeSearchResultPage = new SearchResultPage($I);
         $googleChromePicturesPage = new PicturesPage($I);
 
@@ -36,7 +36,7 @@ class FindIviCest
     public function compareRatingOnSearchPageAndGooglePlayPage(AcceptanceTester $I): void
     {
         //arrange
-        $googleChromeMainPage = new GoogleChromeMainPage($I);
+        $googleChromeMainPage = new MainPage($I);
         $googleChromeSearchResultPage = new SearchResultPage($I);
 
         //act
@@ -51,7 +51,7 @@ class FindIviCest
     public function findLinkToOfficialSiteInWikipedia(AcceptanceTester $I): void
     {
         //arrange
-        $googleChromeMainPage = new GoogleChromeMainPage($I);
+        $googleChromeMainPage = new MainPage($I);
         $googleChromeSearchResultPage = new SearchResultPage($I);
 
         //act
