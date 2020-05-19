@@ -34,6 +34,7 @@ class PicturesPage
      * @param int $numberOfViewedPictures
      * @param int $numberOfPicturesLeadingToTheSite
      * @return PicturesPage
+     * Кликает на заданное число картинок в поисковой выдаче и проверяет на какой сайт ведет ссылка на картинке
      *
      */
     public function clickOnImageInListAndCheckImageHref(

@@ -9,7 +9,7 @@ use Page\GoogleChromePage\MainPage;
 use Page\GoogleChromePage\PicturesPage;
 use Page\GoogleChromePage\SearchResultPage;
 
-class FindIviCest
+class IviCest
 {
     /**
      * @param AcceptanceTester $I
@@ -33,6 +33,10 @@ class FindIviCest
         $googleChromePicturesPage->clickOnImageInListAndCheckImageHref(30, 3);
     }
 
+    /**
+     * @param AcceptanceTester $I
+     * @throws \Exception
+     */
     public function compareRatingOnSearchPageAndGooglePlayPage(AcceptanceTester $I): void
     {
         //arrange
@@ -48,6 +52,9 @@ class FindIviCest
         $I->assertEquals($googleChromeSearchResultPage->searchPageRating, $googleChromeSearchResultPage->marketPageRating);
     }
 
+    /**
+     * @param AcceptanceTester $I
+     */
     public function findLinkToOfficialSiteInWikipedia(AcceptanceTester $I): void
     {
         //arrange
@@ -57,7 +64,7 @@ class FindIviCest
         //act
         $I->amOnPage($googleChromeMainPage::URL);
         $googleChromeMainPage->search('ivi');
-        $googleChromeSearchResultPage->checkPagesForLinksToWikipediaAndGetLinksToOfficialIviSiteFromArticles(5);
+        $googleChromeSearchResultPage->checkPagesForLinksToWikipedia(5);
 
         //assert
         $I->assertNotEmpty($googleChromeSearchResultPage->linksFromWikipedia);
