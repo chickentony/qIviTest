@@ -64,6 +64,8 @@ class SearchResultPage
      * @throws \Exception
      * Проходит по ссылкам на странице, ищет ссылку на play.google, берет ее рейтинг
      * переходит на play.google и берет рейтинг там. Сохраняет рейтинги в два разных массива.
+     * Код написан не оптимально, явно есть места дя разделения и рефакторинга, но посредством стандартных методов
+     * фреймворка решить задачу нельзя, а для написание хелперов нужно время.
      */
     public function getRatingsFromSearchPageAndMarketPage(): void
     {
@@ -115,6 +117,8 @@ class SearchResultPage
      * @return SearchResultPage
      * Проходит по ссылкам на странице, ищет ссылку на страницу википедии, если она найдена переходит на страницу и ищет
      * ссылки на офф. сайт ivi, если ссылки найдены сохраняет их в массив
+     * Код написан не оптимально, явно есть места дя разделения и рефакторинга, но посредством стандартных методов
+     * фреймворка решить задачу нельзя, а для написание хелперов нужно время.
      */
     private function findLinksToWikipediaAndSaveIt(): SearchResultPage
     {
@@ -165,6 +169,7 @@ class SearchResultPage
      */
     private function clickOnNextPage(): SearchResultPage
     {
+        $this->tester->wait(1);
         $this->tester->scrollTo(self::NEXT_PAGE_LINK);
         $this->tester->click(self::NEXT_PAGE_LINK);
         return $this;

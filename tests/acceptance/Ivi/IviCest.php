@@ -28,9 +28,10 @@ class IviCest
         $googleChromeSearchResultPage->clickOnPicturesTab();
         $googleChromePicturesPage->clickOnToolsButton();
         $googleChromePicturesPage->selectImageSize($googleChromePicturesPage::BIG_IMAGE_SIZE_DROPDOWN_VALUE);
+        $googleChromePicturesPage->clickOnImageInListAndCheckImageHref(30, 3);
 
         //assert
-        $googleChromePicturesPage->clickOnImageInListAndCheckImageHref(30, 3);
+        $I->assertEquals(3, $googleChromePicturesPage->countLinksToOfficialSite);
     }
 
     /**
