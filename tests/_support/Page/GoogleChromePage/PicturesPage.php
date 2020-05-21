@@ -18,9 +18,6 @@ class PicturesPage
     /** @var string Значение из выпадающего списка */
     public const BIG_IMAGE_SIZE_DROPDOWN_VALUE = '//div[@class="Hm7Qac "]//span[contains(text(), \'Большой\')]';
 
-    /** @var int Количество ссылок на оффициальный сайт иви */
-    public $countLinksToOfficialSite;
-
     /**
      * PicturesPage constructor.
      * @param \AcceptanceTester $tester
@@ -36,42 +33,35 @@ class PicturesPage
     /**
      * @param int $numberOfViewedPictures
      * @param int $expectedNumberOfLinks
-     * @return PicturesPage
+     * @return int
      * Кликает на заданное число картинок в поисковой выдаче и проверяет на какой сайт ведет ссылка на картинке
-     * Код написан не оптимально, явно есть места дя разделения и рефакторинга, но посредством стандартных методов
-     * фреймворка решить задачу нельзя, а для написание хелперов нужно время.
+     * ToDo: вынести генерацию xpath в отдельный метод, wait(2) - явно можно пофиксить ожиданием появления чего-то другого
+     * ToDo: wait(2) - явно можно пофиксить ожиданием появления чего-то другого
      */
     public function clickOnImageInListAndCheckImageHref(
         int $numberOfViewedPictures,
         int $expectedNumberOfLinks
-    ): PicturesPage
+    ): int
     {
         $linksCount = 0;
-        //Цикл который просмотривает заданное кол-во картинок и ище в нем ссылку на офф. сайт ivi
         for ($i = 0; $i < $numberOfViewedPictures; $i++) {
             //xpath картинки, номер картинки меняется каждую итерацию
             $image = "//div[@id='islrg']//div[@data-ri='{$i}']";
-            //Кликает на картинку что бы открыть превью
             $this->tester->click($image);
             $this->tester->wait(2);
-            //Получает ссылку из превью картинки
             $link = $this->tester->grabAttributeFrom(self::IMAGE_LINK_CONTAINER, 'href');
-            //Регулярка для поиска ссылки н офф. сайт
             $pattern = "/^http[s]?:\/\/(.*)(www.ivi.ru)/";
-            //Проверка ссылки на соответсвие регулярке
             preg_match($pattern, $link, $matches);
             //Если массив с совпадениями не пустой и первый элемент массива ссылка на офф сайт, увеличивается счетчик ссылок
             if (!empty($matches) && $matches[0] === 'https://www.ivi.ru') {
                 $linksCount++;
             }
-            //Если счетчик ссылок равен заданному ожидаемому кол-ву ссылок прерываем цикл
             if ($linksCount === $expectedNumberOfLinks) {
                 break;
             }
         }
-        $this->countLinksToOfficialSite = $linksCount;
 
-        return $this;
+        return $linksCount;
     }
 
     /**
@@ -90,6 +80,8 @@ class PicturesPage
      * @param string $imageSize
      * @return PicturesPage
      * @throws \Exception Выбирает размер картинок в выдаче
+     * ToDo: wait - переписать на ожидание появления элемента
+     * ToDo: переписать селектор для размера картинки
      */
     public function selectImageSize(string $imageSize): PicturesPage
     {

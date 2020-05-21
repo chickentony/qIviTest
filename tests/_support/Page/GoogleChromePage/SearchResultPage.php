@@ -64,34 +64,24 @@ class SearchResultPage
      * @throws \Exception
      * Проходит по ссылкам на странице, ищет ссылку на play.google, берет ее рейтинг
      * переходит на play.google и берет рейтинг там. Сохраняет рейтинги в два разных массива.
-     * Код написан не оптимально, явно есть места дя разделения и рефакторинга, но посредством стандартных методов
-     * фреймворка решить задачу нельзя, а для написание хелперов нужно время.
+     * ToDo: вынести действия над страницей с гуглом в отдельный метод
      */
     public function getRatingsFromSearchPageAndMarketPage(): void
     {
-        //Берем все ссылки на странице
         $links = $this->getResourcesLinksOnPage();
-        //Регулярка для нужной нам ссылки
         $linkPattern = "/\bplay.google.com\b/";
-        //Регулярка для вытаскивания рейтинга из строки с рейтингом
         $ratingPattern = "((?:\d+,)\d+(?:\.\d+)?)";
-        //Цикл для всех ссылок на странице поисковой выдачи
         foreach ($links as $link) {
             if (preg_match($linkPattern, $link)) {
-                //Берем строку с рейтингом со страницы поисковой выдачи
                 $stringWithRatingOnSearchPage = $this->tester->grabTextFrom(self::RATING_CONTAINER);
-                //Переходим в google.play
                 $this->tester->click($link);
                 $this->tester->waitForElementVisible($this->playMarketPage::RATING_CONTAINER);
-                //Берем строку с рейтингом со страницы google.play
                 $stringWithRatingOnMarketPage = $this->tester->grabAttributeFrom($this->playMarketPage::RATING_CONTAINER, 'aria-label');
-                //Возвращаемся на страницу с поисковой выдачей
                 $this->tester->moveBack();
                 $this->tester->wait(1);
                 //Из строк с рейтингами получаем непосредственно сам рейтинг(число)
                 preg_match($ratingPattern, $stringWithRatingOnSearchPage, $searchPageRating);
                 preg_match($ratingPattern, $stringWithRatingOnMarketPage, $marketPageRating);
-                //Записываем в массивы первый элемент, а не целый массив, что бы не получался массив массивов
                 $this->searchPageRating[] = $searchPageRating;
                 $this->marketPageRating[] = $marketPageRating;
             }
@@ -117,32 +107,25 @@ class SearchResultPage
      * @return SearchResultPage
      * Проходит по ссылкам на странице, ищет ссылку на страницу википедии, если она найдена переходит на страницу и ищет
      * ссылки на офф. сайт ivi, если ссылки найдены сохраняет их в массив
-     * Код написан не оптимально, явно есть места дя разделения и рефакторинга, но посредством стандартных методов
-     * фреймворка решить задачу нельзя, а для написание хелперов нужно время.
+     * ToDO: вынести действия над википедией в отдельный метод (первый if)
      */
     private function findLinksToWikipediaAndSaveIt(): SearchResultPage
     {
-        //Берем все ссылки на странице
         $links = $this->getResourcesLinksOnPage();
-        //Регулярка для ссылки на википедию
         $linkPattern = '/\bwikipedia.org\b/';
-        //Регулярка для поиска ссылки на офф сайт иви
         $officialIviSitePattern = "/^http[s]?:\/\/(.*)(www.ivi.ru)/";
         //Цикл для всех ссылок на странице поисковой выдачи
         foreach ($links as $link) {
             //Если есть ссыслка на википедию, переходим туда
             if (preg_match($linkPattern, $link)) {
                 $this->tester->click($link);
-                //Берет все ссылки из статьи
                 $articleLinks = $this->tester->grabMultiple($this->wikipediaPage::LINKS_IN_ARTICLE, 'href');
                 //Проходит по всем ссылка в статье и ищет совпадения по регулярному выражению
                 foreach ($articleLinks as $articleLink) {
-                    //Если совпадение найдено записывает его в массив, если совпадений нет - пустой массив
                     if (preg_match($officialIviSitePattern, $articleLink, $matches)) {
                         $this->linksFromWikipedia[] = $matches;
                     }
                 }
-                //Возвращается на страницу поисковой выдачи
                 $this->tester->moveBack();
             }
         }

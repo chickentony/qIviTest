@@ -28,10 +28,12 @@ class IviCest
         $googleChromeSearchResultPage->clickOnPicturesTab();
         $googleChromePicturesPage->clickOnToolsButton();
         $googleChromePicturesPage->selectImageSize($googleChromePicturesPage::BIG_IMAGE_SIZE_DROPDOWN_VALUE);
-        $googleChromePicturesPage->clickOnImageInListAndCheckImageHref(30, 3);
+        $linksCount = $googleChromePicturesPage->clickOnImageInListAndCheckImageHref(
+            30, 3
+        );
 
         //assert
-        $I->assertEquals(3, $googleChromePicturesPage->countLinksToOfficialSite);
+        $I->assertEquals(3, $linksCount);
     }
 
     /**
@@ -50,7 +52,9 @@ class IviCest
         $googleChromeSearchResultPage->checkPagesForRating(5);
 
         //assert
-        $I->assertEquals($googleChromeSearchResultPage->searchPageRating, $googleChromeSearchResultPage->marketPageRating);
+        $I->assertEquals(
+            $googleChromeSearchResultPage->searchPageRating, $googleChromeSearchResultPage->marketPageRating
+        );
     }
 
     /**
