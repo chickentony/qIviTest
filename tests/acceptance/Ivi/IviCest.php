@@ -59,8 +59,9 @@ class IviCest
 
     /**
      * @param AcceptanceTester $I
+     * @throws \Exception
      */
-    public function findLinkToOfficialSiteInWikipedia(AcceptanceTester $I): void
+    public function findLinkToOfficialSiteInWikipediaArticle(AcceptanceTester $I): void
     {
         //arrange
         $googleChromeMainPage = new MainPage($I);

@@ -11,6 +11,9 @@ class SearchResultPage
     /** @var string xpath вкладки "Картинки" */
     public const PICTURES_TAB = '//*[text()="Картинки"]';
 
+    /** @var string xpath логотипа "Google" */
+    public const LOGOTYPE_CONTAINER = '//div[@class="logo"]';
+
     /** @var string xpath ссылки на ресурсы в поисковой выдаче */
     public const RESOURCES_LINK = '//div[@class="r"]//cite';
 
@@ -46,6 +49,7 @@ class SearchResultPage
     /** @var PlayMarketPage */
     protected $playMarketPage;
 
+    /** @var WikipediaPage */
     protected $wikipediaPage;
 
     /**
@@ -64,7 +68,6 @@ class SearchResultPage
      * @throws \Exception
      * Проходит по ссылкам на странице, ищет ссылку на play.google, берет ее рейтинг
      * переходит на play.google и берет рейтинг там. Сохраняет рейтинги в два разных массива.
-     * ToDo: вынести действия над страницей с гуглом в отдельный метод
      */
     public function getRatingsFromSearchPageAndMarketPage(): void
     {
@@ -74,11 +77,7 @@ class SearchResultPage
         foreach ($links as $link) {
             if (preg_match($linkPattern, $link)) {
                 $stringWithRatingOnSearchPage = $this->tester->grabTextFrom(self::RATING_CONTAINER);
-                $this->tester->click($link);
-                $this->tester->waitForElementVisible($this->playMarketPage::RATING_CONTAINER);
-                $stringWithRatingOnMarketPage = $this->tester->grabAttributeFrom($this->playMarketPage::RATING_CONTAINER, 'aria-label');
-                $this->tester->moveBack();
-                $this->tester->wait(1);
+                $stringWithRatingOnMarketPage = $this->openGooglePlayPageAndGetRating($link);
                 //Из строк с рейтингами получаем непосредственно сам рейтинг(число)
                 preg_match($ratingPattern, $stringWithRatingOnSearchPage, $searchPageRating);
                 preg_match($ratingPattern, $stringWithRatingOnMarketPage, $marketPageRating);
@@ -86,6 +85,22 @@ class SearchResultPage
                 $this->marketPageRating[] = $marketPageRating;
             }
         }
+    }
+
+    /**
+     * @param string $googlePLayLink
+     * @return mixed
+     * @throws \Exception
+     * Открывае страницу гугл плей и возвращает со страницы строку с рейтингом
+     */
+    private function openGooglePlayPageAndGetRating(string $googlePLayLink)
+    {
+        $this->tester->click($googlePLayLink);
+        $this->tester->waitForElementVisible($this->playMarketPage::RATING_CONTAINER);
+        $result = $this->tester->grabAttributeFrom($this->playMarketPage::RATING_CONTAINER, 'aria-label');
+        $this->tester->moveBack();
+        $this->tester->waitForElementVisible(self::LOGOTYPE_CONTAINER);
+        return $result;
     }
 
     /**
@@ -107,35 +122,44 @@ class SearchResultPage
      * @return SearchResultPage
      * Проходит по ссылкам на странице, ищет ссылку на страницу википедии, если она найдена переходит на страницу и ищет
      * ссылки на офф. сайт ivi, если ссылки найдены сохраняет их в массив
-     * ToDO: вынести действия над википедией в отдельный метод (первый if)
      */
     private function findLinksToWikipediaAndSaveIt(): SearchResultPage
     {
         $links = $this->getResourcesLinksOnPage();
         $linkPattern = '/\bwikipedia.org\b/';
-        $officialIviSitePattern = "/^http[s]?:\/\/(.*)(www.ivi.ru)/";
-        //Цикл для всех ссылок на странице поисковой выдачи
         foreach ($links as $link) {
-            //Если есть ссыслка на википедию, переходим туда
             if (preg_match($linkPattern, $link)) {
-                $this->tester->click($link);
-                $articleLinks = $this->tester->grabMultiple($this->wikipediaPage::LINKS_IN_ARTICLE, 'href');
-                //Проходит по всем ссылка в статье и ищет совпадения по регулярному выражению
-                foreach ($articleLinks as $articleLink) {
-                    if (preg_match($officialIviSitePattern, $articleLink, $matches)) {
-                        $this->linksFromWikipedia[] = $matches;
-                    }
-                }
-                $this->tester->moveBack();
+                $this->linksFromWikipedia = $this->openWikipediaPageAndGetAllLinksFromArticle($link);
             }
         }
         return $this;
     }
 
     /**
+     * @param string $wikipediaLink
+     * @return array
+     * Открывает википедию собирает все ссылки из статьи и находит среди них ссылки на оффициальный сайт
+     */
+    private function openWikipediaPageAndGetAllLinksFromArticle(string $wikipediaLink): array
+    {
+        $linkPattern = "/^http[s]?:\/\/(.*)(www.ivi.ru)/";
+        $result = [];
+        $this->tester->click($wikipediaLink);
+        $articleLinks = $this->tester->grabMultiple($this->wikipediaPage::LINKS_IN_ARTICLE, 'href');
+        foreach ($articleLinks as $articleLink) {
+            if (preg_match($linkPattern, $articleLink, $matches)) {
+                $result[] = $matches;
+            }
+        }
+        $this->tester->moveBack();
+        return $result;
+    }
+
+    /**
      * @param int $numberOfPages
      * @return SearchResultPage
      * Ходит по заданному количеству страниц и ищет ссылки на википедию
+     * @throws \Exception
      */
     public function checkPagesForLinksToWikipedia(int $numberOfPages): SearchResultPage
     {
@@ -149,10 +173,11 @@ class SearchResultPage
     /**
      * @return SearchResultPage
      * Кликает на следующую страницу поисковой выдачи
+     * @throws \Exception
      */
     private function clickOnNextPage(): SearchResultPage
     {
-        $this->tester->wait(1);
+        $this->tester->waitForElementClickable(self::NEXT_PAGE_LINK);
         $this->tester->scrollTo(self::NEXT_PAGE_LINK);
         $this->tester->click(self::NEXT_PAGE_LINK);
         return $this;
